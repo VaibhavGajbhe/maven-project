@@ -55,7 +55,7 @@ pipeline {
     {
         when { expression { params.select_environemnt == 'dev' } 
         beforeAgent true }
-        agents {
+        agent {
             label 'DevServer'
         }
         steps
