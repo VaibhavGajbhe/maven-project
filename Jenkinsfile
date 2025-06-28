@@ -17,8 +17,9 @@ pipeline {
     stage('Build') {
       steps {
         sh 'mvn clean package -DskipTests=true'
-        sh 'find target -name "*.war"' // Debug
+        sh 'find target -name "*.war"'
         stash name: 'maven-build', includes: 'target/maven-web-application.war'
+        archiveArtifacts artifacts: 'target/*.war', fingerprint: true
       }
     }
 
