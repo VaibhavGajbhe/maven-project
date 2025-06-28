@@ -50,13 +50,20 @@ pipeline {
       }
       agent { label 'DevServer' }
       steps {
-        dir("/var/www/html") {
-          unstash 'maven-build'
-          sh 'cp target/*.war .'
-          sh 'systemctl restart tomcat'
-          echo "Deployed to Dev Server"
-          sh 'jar -xvf *.war'
-        }
+         // Use a directory Jenkins can access
+    dir("${env.WORKSPACE}/deploy") {
+        unstash 'maven-build'
+        sh 'cp target/*.war .'
+        sh 'jar -xvf *.war'
+
+        // Optional: Copy to web root (requires sudo permission)
+        sh 'sudo cp -r * /var/www/html/'
+
+        // Restart Tomcat with sudo (requires proper sudoers setup)
+        sh 'sudo systemctl restart tomcat'
+
+        echo "Deployed to Dev Server"
+    }
       }
     }
   }
