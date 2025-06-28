@@ -1,11 +1,11 @@
 pipeline {
 
     agent {
-        label 'DevServer'
+      label 'DevServer'
     }
 
     parameters {
-     choice choices: ['dev', 'prod'], name: 'select_environemnt'
+    choice choices: ['dev', 'prod'], name: 'select_environemnt'
    }
 
     tools {
