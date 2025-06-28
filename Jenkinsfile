@@ -1,78 +1,73 @@
 pipeline {
+  agent { label 'DevServer' }
 
-    agent {
-      label 'DevServer'
-    }
-
-    parameters {
+  parameters {
     choice choices: ['dev', 'prod'], name: 'select_environemnt'
-   }
+  }
 
-    tools {
+  tools {
     maven 'myMaven'
-   }
+  }
 
-    environment {
-        NAME = 'piyush'
+  environment {
+    NAME = 'piyush'
+  }
+
+  stages {
+    stage('Build') {
+      steps {
+        sh 'mvn clean package -DskipTests=true'
+        dir("target") {
+          stash name: "maven-build", includes: "maven-web-application.war"
+        }
+      }
     }
 
-    stages {
-        stage('Build') {
-            steps {
-                // Build the project using Maven
-                sh 'mvn clean package -DskipTests=true'
-                // echo "Hello ${NAME} ${params.LASTNAME}"
-            }
-            
+    stage('Test') {
+      parallel {
+        stage('testA') {
+          agent { label 'DevServer' }
+          steps {
+            echo "Running tests for A"
+            sh 'mvn test'
+          }
         }
-        stage('Test') {
-            parallel {
-              stage(testA){
-                steps {
-                    agent {label 'DevServer'}
-                    echo "Running tests for A"
-                    sh 'mvn test'
-                }
-              }
-              stage(testB){
-                steps {
-                    agent {label 'DevServer'}
-                    echo "Running tests for B"
-                    sh 'mvn test'
-                }
-              }
-            }
-            post {
-                success {
-                  dir ("test-pipeline/target") {
-                    stash name: "maven-build", includes: "**/*.war"
-                    // archiveArtifacts artifacts: '**/target/*.war'
-                }
-            }
+        stage('testB') {
+          agent { label 'DevServer' }
+          steps {
+            echo "Running tests for B"
+            sh 'mvn test'
+          }
         }
+      }
+      post {
+        success {
+          dir("test-pipeline/target") {
+            stash name: "maven-build", includes: "**/*.war"
+            // archiveArtifacts artifacts: '**/target/*.war'
+          }
+        }
+      }
     }
-    stage('Deploy_dev') 
-    {
-        when { expression { params.select_environemnt == 'dev' } 
-        beforeAgent true }
-        agent {
-            label 'DevServer'
+
+    stage('Deploy_dev') {
+      when {
+        expression { params.select_environemnt == 'dev' }
+        beforeAgent true
+      }
+      agent { label 'DevServer' }
+      steps {
+        dir("/var/www/html") {
+          unstash 'maven-build'
+          sh 'cp target/*.war .'
+          sh 'systemctl restart tomcat'
+          echo "Deployed to Dev Server"
         }
-        steps
-        {
-             dir ("/var/www/html")
-             {
-                unstash 'maven-build'
-                sh 'cp target/*.war .'
-                sh 'systemctl restart tomcat'
-                echo "Deployed to Dev Server"
-             }
-             sh """
-             cd /var/www/html/
-             jar -xvf *.war
-             """
-        }
-            
+        sh '''
+          cd /var/www/html/
+          jar -xvf *.war
+        '''
+      }
     }
- }
+  }
 }
