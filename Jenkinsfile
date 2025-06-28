@@ -45,7 +45,7 @@ pipeline {
             post {
                 success {
                   dir ("test-pipeline/target") {
-                    stash name : "maven-build", includes: "**/target/*.war"
+                    stash name: "maven-build", includes: "**/*.war"
                     // archiveArtifacts artifacts: '**/target/*.war'
                 }
             }
