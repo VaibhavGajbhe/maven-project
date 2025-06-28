@@ -23,6 +23,21 @@ pipeline {
                 sh 'mvn clean package'
                 echo "Hello ${NAME} ${params.LASTNAME}"
             }
+            
+        }
+        stage('Test') {
+            parallel {
+              stage(testA){
+                steps {
+                    echo "Running tests for A"
+                }
+              }
+              stage(testB){
+                steps {
+                    echo "Running tests for B"
+                }
+              }
+            }
             post {
                 success {
                     archiveArtifacts artifacts: '**/target/*.war'
@@ -30,4 +45,5 @@ pipeline {
             }
         }
     }
+    
 }
