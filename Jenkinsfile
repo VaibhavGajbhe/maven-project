@@ -40,14 +40,7 @@ pipeline {
           }
         }
       }
-      post {
-        success {
-          dir("test-pipeline/target") {
-            stash name: "maven-build", includes: "**/*.war"
-            // archiveArtifacts artifacts: '**/target/*.war'
-          }
-        }
-      }
+      // ❌ Removed the broken post { success { stash ... } } block
     }
 
     stage('Deploy_dev') {
@@ -62,11 +55,8 @@ pipeline {
           sh 'cp target/*.war .'
           sh 'systemctl restart tomcat'
           echo "Deployed to Dev Server"
+          sh 'jar -xvf *.war'
         }
-        sh '''
-          cd /var/www/html/
-          jar -xvf *.war
-        '''
       }
     }
   }
