@@ -68,7 +68,7 @@ pipeline {
                 echo "Deployed to Dev Server"
              }
              sh """
-             cd /var/www/html
+             cd /var/www/html/
              jar -xvf *.war
              """
         }
