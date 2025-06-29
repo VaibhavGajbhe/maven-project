@@ -10,7 +10,7 @@ pipeline {
   }
 
   environment {
-    NAME = 'piyush'
+    NAME = 'Vaibhav'
   }
 
   stages {
@@ -44,7 +44,7 @@ pipeline {
           }
         }
       }
-      // ❌ Removed the broken post { success { stash ... } } block
+      
     }
 
     stage('Deploy_dev') {
@@ -59,11 +59,7 @@ pipeline {
         unstash 'maven-build'
         sh 'cp target/*.war .'
         sh 'jar -xvf *.war'
-
-        // Optional: Copy to web root (requires sudo permission)
         sh 'sudo cp -r * /var/www/html/'
-
-        // Restart Tomcat with sudo (requires proper sudoers setup)
         sh 'sudo systemctl restart tomcat'
 
         echo "Deployed to Dev Server"
